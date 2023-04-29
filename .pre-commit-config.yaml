@@ -43,9 +43,4 @@ repos:
         "types_or": [python, pyi]
         exclude: ^tests/
         args:
-          [
-            "--ignore-missing-imports",
-            "--disallow-any-generics",
-            "--config-file",
-            "./pyproject.toml",
-          ]
+          ["--install-types", "--non-interactive", "--ignore-missing-imports"]
