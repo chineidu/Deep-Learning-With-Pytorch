@@ -2,4 +2,5 @@ jupyter
 matplotlib==3.7.0
 nb_black
 pandas==2.0.0
+seaborn==0.12.2
 scikit-learn==1.2.1
