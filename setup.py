@@ -13,7 +13,6 @@ style_packages = ["black==22.3.0", "isort==5.10.1", "mypy==1.2.0", "pylint==2.15
 
 test_packages = ["pytest==7.1.2", "pytest-cov==2.10.1"]
 
-# Define our package
 setup(
     name="dudl",
     version=0.1,
