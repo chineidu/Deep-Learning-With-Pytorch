@@ -27,6 +27,6 @@ def create_iris_data() -> tuple[np.ndarray, np.ndarray]:
 
 
 # create a 1D smoothing filter
-def smooth(X, k=5):
+def smooth(X: np.ndarray, k: int = 5):
     """This is used to smoothen the plot."""
     return np.convolve(X, np.ones(k) / k, mode="same")
