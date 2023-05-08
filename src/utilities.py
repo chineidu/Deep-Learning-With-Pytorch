@@ -1,10 +1,11 @@
 """This module contains utility functions."""
 import numpy as np
+import numpy.typing as npt
 import seaborn as sns
 import torch
 
 
-def create_iris_data() -> tuple[np.ndarray, np.ndarray]:
+def create_iris_data() -> tuple[torch.Tensor, torch.Tensor]:
     """This returns the independent and the target features."""
     # load data
     iris_data = sns.load_dataset("iris")
@@ -27,6 +28,6 @@ def create_iris_data() -> tuple[np.ndarray, np.ndarray]:
 
 
 # create a 1D smoothing filter
-def smooth(X: np.ndarray, k: int = 5):
+def smooth(X: npt.NDArray[np.float64], k: int = 5) -> npt.NDArray[np.float64]:
     """This is used to smoothen the plot."""
     return np.convolve(X, np.ones(k) / k, mode="same")
