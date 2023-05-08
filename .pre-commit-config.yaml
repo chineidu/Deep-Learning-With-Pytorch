@@ -43,4 +43,9 @@ repos:
         "types_or": [python, pyi]
         exclude: ^tests/
         args:
-          ["--install-types", "--non-interactive", "--ignore-missing-imports"]
+          [
+            "--install-types",
+            "--non-interactive",
+            "--disallow-any-generics",
+            "--ignore-missing-imports",
+          ]
