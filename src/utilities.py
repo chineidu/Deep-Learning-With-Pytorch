@@ -28,6 +28,42 @@ def create_iris_data() -> tuple[torch.Tensor, torch.Tensor]:
     return (X, y)
 
 
+def create_qwerties_data() -> tuple[torch.Tensor, torch.Tensor]:
+    """This is used to generate data. It returns a tuple containing X and y."""
+    n_per_clust, blur = 300, 1
+
+    A = [1, 1]
+    B = [5, 1]
+    C = [4, 3]
+
+    # generate data
+    a = [
+        A[0] + np.random.randn(n_per_clust) * blur,
+        A[1] + np.random.randn(n_per_clust) * blur,
+    ]
+    b = [
+        B[0] + np.random.randn(n_per_clust) * blur,
+        B[1] + np.random.randn(n_per_clust) * blur,
+    ]
+    c = [
+        C[0] + np.random.randn(n_per_clust) * blur,
+        C[1] + np.random.randn(n_per_clust) * blur,
+    ]
+
+    # true labels
+    labels_np = np.hstack(
+        (np.zeros((n_per_clust)), np.ones((n_per_clust)), 1 + np.ones((n_per_clust)))
+    )
+
+    # concatanate into a matrix
+    data_np = np.hstack((a, b, c)).T
+
+    # convert to a pytorch tensor
+    X = torch.tensor(data_np).float()
+    y = torch.tensor(labels_np).long()  # note: "long" format for CCE
+    return (X, y)
+
+
 # create a 1D smoothing filter
 def smooth(X: npt.NDArray[np.float64], k: int = 5) -> npt.NDArray[np.float64]:
     """This is used to smoothen the plot."""

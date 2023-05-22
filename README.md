@@ -4,7 +4,7 @@
 
 - [Deep-Learning-With-Pytorch](#deep-learning-with-pytorch)
   - [Table of Content](#table-of-content)
-  - [ Source ](#-source-)
+  - [Source](#source)
   - [1. Maths/NumPy/PyTorch](#1-mathsnumpypytorch)
   - [2. ANN](#2-ann)
   - [3. Cross Validation](#3-cross-validation)
@@ -13,7 +13,7 @@
 
 Deep understanding of deep learning using Pytorch
 
-## <font color="green"> Source </font>
+## Source
 
 - The code was inspired by this awesome Udemy [course](https://www.udemy.com/course/deeplearning_x/learn/lecture/27844168#overview).
 
