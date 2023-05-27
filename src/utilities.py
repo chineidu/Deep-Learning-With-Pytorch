@@ -1,7 +1,9 @@
 """This module contains utility functions."""
+import logging
+from typing import Any
+
 import numpy as np
 import numpy.typing as npt
-import pandas as pd
 import seaborn as sns
 import torch
 
@@ -59,8 +61,8 @@ def create_qwerties_data() -> tuple[torch.Tensor, torch.Tensor]:
     data_np = np.hstack((a, b, c)).T
 
     # convert to a pytorch tensor
-    X = torch.tensor(data_np).float()
-    y = torch.tensor(labels_np).long()  # note: "long" format for CCE
+    X = torch.tensor(data_np).float()  # pylint: disable=no-member
+    y = torch.tensor(labels_np).long()  # pylint: disable=no-member
     return (X, y)
 
 
@@ -70,23 +72,10 @@ def smooth(X: npt.NDArray[np.float64], k: int = 5) -> npt.NDArray[np.float64]:
     return np.convolve(X, np.ones(k) / k, mode="same")
 
 
-def load_data(*, filename: str, sep: str = ",") -> pd.DataFrame:
-    """This is used to load the data.
+def set_up_logger(delim: str = "::") -> Any:
+    """This is used to create a basic logger."""
 
-    NB: Supported formats are 'csv' and 'parquet'.
-
-    Params;
-        filename (str): The filepath.\n
-        sep (str, default=","): The separator. e.g ',', '\t', etc \n
-
-    Returns:
-        data (pd.DataFrame): The loaded dataframe.
-    """
-    data = (
-        pd.read_csv(filename, sep=sep)
-        if filename.split(".")[-1] == "csv"
-        else pd.read_parquet(filename)
-    )
-    print(f"Shape of data: {data.shape}\n")
-
-    return data
+    format_ = f"[%(levelname)s]{delim} %(asctime)s{delim} %(message)s"
+    logging.basicConfig(level=logging.INFO, format=format_)
+    logger = logging.getLogger(__name__)
+    return logger
