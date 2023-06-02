@@ -76,8 +76,19 @@ def _create_torch_dataset(
     X_validation: torch.Tensor,
     y_train: torch.Tensor,
     y_validation: torch.Tensor,
-) -> tuple[DataLoader, DataLoader]:
-    """This returns the created TensorDataset objects."""
+) -> tuple[TensorDataset, TensorDataset]:
+    """This returns the created TensorDataset objects.
+
+    Params:
+        X_train (torch.Tensor): The training data. \n
+        X_validation (torch.Tensor): The validation data. \n
+        y_train (torch.Tensor): The labels of the training data. \n
+        y_validation (torch.Tensor): The labels of the validation data. \n
+
+    Returns:
+        train_DL (TensorDataset): The training TensorDataset object. \n
+        validation_DL (TensorDataset): The validation TensorDataset object. \n
+    """
 
     train_data = TensorDataset(X_train, y_train)
     validation_data = TensorDataset(X_validation, y_validation)
@@ -92,7 +103,20 @@ def create_data_loader(
     y_validation: torch.Tensor,
     batch_size: int,
 ) -> tuple[DataLoader, DataLoader]:
-    """This returns the created DataLoader objects."""
+    """This returns the created DataLoader objects.
+
+    Params:
+        X_train (torch.Tensor): The training data. \n
+        X_validation (torch.Tensor): The validation data. \n
+        y_train (torch.Tensor): The labels of the training data. \n
+        y_validation (torch.Tensor): The labels of the validation data. \n
+        batch_size (int): The number of samples to used to calculate
+                        the loss and update the model weights per epoch.
+
+    Returns:
+        train_DL (DataLoader): The training dataloader object. \n
+        validation_DL (DataLoader): The validation dataloader object. \n
+    """
     train_data, validation_data = _create_torch_dataset(
         X_train=X_train, X_validation=X_validation, y_train=y_train, y_validation=y_validation
     )
