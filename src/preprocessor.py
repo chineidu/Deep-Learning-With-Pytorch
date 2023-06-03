@@ -33,9 +33,14 @@ class Standardizer:
         self.mean = np.zeros(shape=X.shape[1])
         self.std = np.zeros(shape=X.shape[1])
 
-        for idx, var in enumerate(X.columns):
-            self.mean[idx] = np.mean(X[var])  # type: ignore
-            self.std[idx] = np.std(X[var])  # type: ignore
+        if isinstance(X, np.ndarray):
+            for idx in np.arange(X.shape[1]):
+                self.mean[idx] = np.mean(X[:, idx])  # type: ignore
+                self.std[idx] = np.std(X[:, idx])  # type: ignore
+        else:
+            for idx, var in enumerate(X.columns):
+                self.mean[idx] = np.mean(X[var])  # type: ignore
+                self.std[idx] = np.std(X[var])  # type: ignore
 
         return self
 
@@ -94,12 +99,17 @@ class Normalizer:
         self, X: Union[pd.DataFrame, npt.NDArray[np.float_]], y=None
     ) -> Union[pd.DataFrame, npt.NDArray[np.float_]]:
         """This is used to learn the parameters,"""
-        self._min = np.zeros(shape=X.shape[1])
-        self._max = np.zeros(shape=X.shape[1])
+        self._min = np.zeros(shape=(X.shape[1]))
+        self._max = np.zeros(shape=(X.shape[1]))
 
-        for idx, var in enumerate(X.columns):
-            self._min[idx] = np.min(X[var])  # type: ignore
-            self._max[idx] = np.max(X[var])  # type: ignore
+        if isinstance(X, np.ndarray):
+            for idx in np.arange(X.shape[1]):
+                self._min[idx] = np.min(X[:, idx])  # type: ignore
+                self._max[idx] = np.max(X[:, idx])  # type: ignore
+        else:
+            for idx, var in enumerate(X.columns):
+                self._min[idx] = np.min(X[var])  # type: ignore
+                self._max[idx] = np.max(X[var])  # type: ignore
 
         return self
 
@@ -107,7 +117,6 @@ class Normalizer:
         self, X: Union[pd.DataFrame, npt.NDArray[np.float_]], y=None
     ) -> Union[pd.DataFrame, npt.NDArray[np.float_]]:
         """This applies the transformation."""
-        # X = self._normalize(X=X, min_=self._min, max_=self._max)
         X = self._custom_normalize(X=X, min_=self._min, max_=self._max)
         return X
 

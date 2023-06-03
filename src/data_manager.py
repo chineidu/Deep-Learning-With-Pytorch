@@ -1,4 +1,5 @@
 """This module is used for loading and manipulating data."""
+from typing import Any
 
 import pandas as pd
 import torch
@@ -70,6 +71,14 @@ def split_into_train_n_validation(
     return (X_train, X_validation, y_train, y_validation)
 
 
+def _is_tensor(*, X: Any) -> torch.Tensor:
+    """This is used to validate an input. It returns True
+    if the input is a Tensor otherwise False."""
+    if not isinstance(X, torch.Tensor):
+        raise TypeError("X is not of type `Tensor`.")
+    return X
+
+
 def _create_torch_dataset(
     *,
     X_train: torch.Tensor,
@@ -89,6 +98,8 @@ def _create_torch_dataset(
         train_DL (TensorDataset): The training TensorDataset object. \n
         validation_DL (TensorDataset): The validation TensorDataset object. \n
     """
+    X_train, y_train = _is_tensor(X=X_train), _is_tensor(X=y_train)
+    X_validation, y_validation = _is_tensor(X=X_validation), _is_tensor(X=y_validation)
 
     train_data = TensorDataset(X_train, y_train)
     validation_data = TensorDataset(X_validation, y_validation)
