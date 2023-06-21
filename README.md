@@ -18,7 +18,7 @@ Deep understanding of deep learning using Pytorch
 
 ## Source
 
-- The code was inspired by this awesome Udemy [course](https://www.udemy.com/course/deeplearning_x/learn/lecture/27844168#overview).
+- This repo was inspired by this awesome Udemy [course](https://www.udemy.com/course/deeplearning_x/learn/lecture/27844168#overview).
 
 ## 1. [Maths/NumPy/PyTorch](https://github.com/chineidu/Deep-Learning-With-Pytorch/tree/main/notebook/01_maths_numpy_pytorch)
 
