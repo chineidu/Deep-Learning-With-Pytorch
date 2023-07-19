@@ -7,21 +7,30 @@
   - [Model Building Styles In PyTorch](#model-building-styles-in-pytorch)
     - [1. Using Sequential API](#1-using-sequential-api)
     - [2. Using Classes](#2-using-classes)
-  - [ANN Using Sequential API](#ann-using-sequential-api)
+  - [ANN (Using Sequential API)](#ann-using-sequential-api)
   - [Common Operations](#common-operations)
     - [DataLoaders](#dataloaders)
+    - [Use Dynamic Activation Functions](#use-dynamic-activation-functions)
+    - [Use Dynamic Optimizers](#use-dynamic-optimizers)
+    - [Save A Trained Model](#save-a-trained-model)
+    - [Load A Trained Model](#load-a-trained-model)
+    - [Save The Best Model Weights](#save-the-best-model-weights)
+    - [Model Evaluation](#model-evaluation)
   - [Regularization](#regularization)
     - [1. Dropout](#1-dropout)
     - [2. Weight Regularization](#2-weight-regularization)
       - [(Ridge/L2)](#ridgel2)
       - [Lasso](#lasso)
     - [3. Mini-Batch](#3-mini-batch)
+  - [FFN](#ffn)
 
 ## Model Building Styles In PyTorch
 
 ### 1. Using Sequential API
 
 ```python
+import torch.nn as nn
+
 def build_model() -> Any:
     """This is used to build the model architecture."""
     clf = nn.Sequential(
@@ -40,6 +49,8 @@ def build_model() -> Any:
 - It's very flexible.
 
 ```python
+import torch.nn.functional as F
+
 def Model(nn.Module) -> Any:
     """This is used to build the model architecture."""
 
@@ -58,7 +69,7 @@ def Model(nn.Module) -> Any:
         return X
 ```
 
-## ANN Using Sequential API
+## ANN (Using Sequential API)
 
 ```python
 def build_model(*, n_units: int) -> Any:
@@ -110,6 +121,9 @@ def train_model(
 ### DataLoaders
 
 ```python
+from torch.utils.data import DataLoader, TensorDataset
+
+
 # Create datasets using the train and test data
 train_data = TensorDataset(torch.Tensor(X_train), torch.Tensor(y_train))
 test_data = TensorDataset(torch.Tensor(X_test), torch.Tensor(y_test))
@@ -119,6 +133,101 @@ train_DL = DataLoader(dataset=train_data, batch_size=4)
 # Batch size is not required for the test_data
 test_DL = DataLoader(dataset=test_data, batch_size=1)
 ```
+
+### Use Dynamic Activation Functions
+
+```python
+# Examples of actvation functions
+activation_funcs = ["ReLU", "ReLU6", "LeakyReLU"]
+
+
+class Net(nn.Module):
+    """This is an ANN architecture with an argument for activation functions."""
+
+    def __init__(self, activation_func: str) -> None:
+        super().__init__()
+        self.activation_func = activation_func
+        self.input = nn.Linear(11, 32)
+        self.hidden = nn.Linear(32, 32)
+        self.output = nn.Linear(32, 1)
+
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
+        """This is used to implement forward propagation."""
+        act_func = getattr(torch, self.activation_func)
+        X = act_func(self.input(X))
+        X = act_func(self.hidden(X))
+        X = torch.sigmoid(self.output(X))
+        return X
+```
+
+### Use Dynamic Optimizers
+
+```python
+def train_model(
+    *,
+    train_dataloader: DataLoader,
+    validation_dataloader: DataLoader,
+    epochs: int,
+    learning_rate: float,
+    optimizer_name: str
+) -> tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    """This is used to train the ANN model."""
+    net, PCT = Net(), 100
+    criterion = nn.CrossEntropyLoss()
+    _optimizer_ = getattr(torch.optim, optimizer_name)
+    optimizer = _optimizer_(params=net.parameters(), lr=learning_rate)
+    train_accuracy, validation_accuracy = np.zeros(shape=(epochs,)), np.zeros(
+        shape=(epochs,)
+    )
+    train_loss = np.zeros(shape=(epochs,))
+
+    for epoch_idx in np.arange(epochs):
+        net.train()
+        batch_loss, batch_accuracy = [], []
+
+        for X_, y_ in train_dataloader:
+            # Reset gradients
+            optimizer.zero_grad()
+
+              # function body ....
+
+    return (train_accuracy, validation_accuracy, train_loss, net)
+
+OPTIMIZERS = ["SGD", "RMSprop", "Adam"]
+```
+
+### Save A Trained Model
+
+```python
+import torch
+
+# Train the model
+trained_net = train_model()
+
+# Save the model
+model_path = "ffn_model_1.pt"
+torch.save(trained_net.state_dict(), model_path)
+```
+
+### Load A Trained Model
+
+```python
+import torch
+
+# Initialize model
+model_1 = Net()
+
+# Load the model weights
+model_1.load_state_dict(torch.load(model_path))
+```
+
+### Save The Best Model Weights
+
+- Check this [notebook](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/06_FNN/02_saving_n_loading_models.ipynb).
+
+### Model Evaluation
+
+- Check this [notebook](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/06_FNN/03_model_evaluation.ipynb).
 
 ## Regularization
 
@@ -366,3 +475,139 @@ def train_iris_model(
 ```
 
 ### 3. Mini-Batch
+
+```python
+class Net(nn.Module):
+    """This is an ANN architecture. The output layer has 3 units."""
+
+    def __init__(self, n_units: int) -> None:
+        super().__init__()
+        # Layers
+        self.input = nn.Linear(4, n_units)
+        self.hidden = nn.Linear(n_units, n_units)
+        self.output = nn.Linear(n_units, 3)
+
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
+        """This is used to perform forward propagation."""
+        X = F.relu(self.input(X))
+        X = F.relu(self.hidden(X))
+        X = torch.softmax(self.output(X), dim=1)
+
+        return X
+
+
+def train_iris_model(
+    *,
+    train_data_loader: DataLoader,
+    validation_data_loader: DataLoader,
+    n_units: int = 64,
+) -> tuple[list[float], list[float], list[float]]:
+    """This is used to train the classifier with mini-batch."""
+    net = Net(n_units=n_units)
+
+    learning_rate, epochs = 0.01, 500
+    PCT = 100
+    optimizer = torch.optim.SGD(params=net.parameters(), lr=learning_rate)
+    criterion, losses = nn.CrossEntropyLoss(), []
+    train_accuracy, validation_accuracy = [], []
+
+    for _ in np.arange(epochs):
+        batch_accuracy, batch_loss = [], []
+        net.train()  # Activate regularization
+
+        # Iteration for the batch data
+        for X_, y_ in train_data_loader:
+            # Reset gradients
+            optimizer.zero_grad()
+
+            # Compute forward prop and loss
+            _y_proba = net(X_)
+            loss = criterion(_y_proba, y_)
+            batch_loss.append(loss.detach())
+
+            # Compute backward prop
+            loss.backward()
+            optimizer.step()
+
+            # Compute batch accuracy
+            _y_pred = torch.argmax(_y_proba, axis=1)
+            acc = torch.mean((_y_pred == y_).float()) * PCT
+            batch_accuracy.append(acc.detach())
+
+        # Compute training loss and accuracy
+        train_accuracy.append(np.mean(batch_accuracy))
+        losses.append(np.mean(batch_loss))
+
+        # Compute validation accuracy
+        net.eval()  # Deactivate regularization
+
+        X_val, y_val = next(iter(validation_data_loader))
+        _y_pred_val = torch.argmax(net(X_val), axis=1)
+        _val_acc = torch.mean((_y_pred_val == y_val).float()) * PCT
+        validation_accuracy.append(_val_acc.detach())
+
+    return (train_accuracy, validation_accuracy, losses)
+```
+
+## FFN
+
+```python
+# Build Model
+class Net(nn.Module):
+    """This is used to build a Feed Forward Network architecture that
+    is used for classification."""
+
+    def __init__(self) -> None:
+        super().__init__()
+        self.input = nn.Linear(784, 32)
+        self.hidden = nn.Linear(32, 32)
+        self.output = nn.Linear(32, 10)
+
+    def forward(self, X: torch.Tensor) -> torch.Tensor:
+        """This is used to implement forward prop."""
+        X = F.relu(self.input(X))
+        X = F.relu(self.hidden(X))
+        X = torch.log_softmax(self.output(X), dim=1)
+        return X
+
+
+def train_model(
+    *,
+    train_dataloader: DataLoader,
+    validation_dataloader: DataLoader,
+    epochs: int,
+    learning_rate: float,
+    optimizer_name: str,
+):
+    """This is used to train the FFN model."""
+    net, PCT = Net(), 100
+    __optimizer__ = getattr(torch.optim, optimizer_name)
+    optimizer = __optimizer__(params=net.parameters(), lr=learning_rate)
+    # Negative log likelihood loss.
+    # It is useful to train a classification problem with C classes.
+    criterion = nn.NLLLoss()
+    train_loss = torch.zeros(size=(epochs,))
+    train_accuracy, validation_accuracy = (
+        np.zeros(shape=(epochs,)),
+        np.zeros(shape=(epochs,)),
+    )
+
+    print(f"Training epoch:")
+    for epoch_idx in np.arange(epochs):
+        net.train()
+        batch_accuracy, batch_loss = [], []
+
+        for X_, y_ in train_dataloader:
+            # Reset gradients
+            optimizer.zero_grad()
+
+            # Forward prop and loss
+            y_proba = net(X_)
+            loss = criterion(y_proba, y_)
+
+            # function body ....
+
+    return (train_accuracy, validation_accuracy, train_loss, net)
+```
+
+- Check this [notebook](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/06_FNN/04_FFNs.ipynb) for more.
