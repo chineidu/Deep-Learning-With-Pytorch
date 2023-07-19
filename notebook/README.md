@@ -19,10 +19,13 @@
   - [Regularization](#regularization)
     - [1. Dropout](#1-dropout)
     - [2. Weight Regularization](#2-weight-regularization)
-      - [(Ridge/L2)](#ridgel2)
+      - [Ridge/L2](#ridgel2)
       - [Lasso](#lasso)
     - [3. Mini-Batch](#3-mini-batch)
   - [FFN](#ffn)
+  - [Weight Inits](#weight-inits)
+  - [Autoencoders](#autoencoders)
+  - [Convolution](#convolution)
 
 ## Model Building Styles In PyTorch
 
@@ -189,7 +192,7 @@ def train_model(
             # Reset gradients
             optimizer.zero_grad()
 
-              # function body ....
+              # Function body ....
 
     return (train_accuracy, validation_accuracy, train_loss, net)
 
@@ -316,7 +319,7 @@ def train_model(
 
 ### 2. Weight Regularization
 
-#### (Ridge/L2)
+#### Ridge/L2
 
 ```python
 class Net(nn.Module):
@@ -366,36 +369,7 @@ def train_iris_model(
         batch_accuracy, batch_loss = [], []
         net.train()  # Activate regularization
 
-        # Iteration for the batch data
-        for X_, y_ in train_data_loader:
-            # Reset gradients
-            optimizer.zero_grad()
-
-            # Compute forward prop and loss
-            _y_proba = net(X_)
-            loss = criterion(_y_proba, y_)
-            batch_loss.append(loss.detach())
-
-            # Compute backward prop
-            loss.backward()
-            optimizer.step()
-
-            # Compute batch accuracy
-            _y_pred = torch.argmax(_y_proba, axis=1)
-            acc = torch.mean((_y_pred == y_).float()) * PCT
-            batch_accuracy.append(acc.detach())
-
-        # Compute training loss and accuracy
-        train_accuracy.append(np.mean(batch_accuracy))
-        losses.append(np.mean(batch_loss))
-
-        # Compute validation accuracy
-        net.eval()  # Deactivate regularization
-
-        X_val, y_val = next(iter(validation_data_loader))
-        _y_pred_val = torch.argmax(net(X_val), axis=1)
-        _val_acc = torch.mean((_y_pred_val == y_val).float()) * PCT
-        validation_accuracy.append(_val_acc.detach())
+        # Function body ....
 
     return (train_accuracy, validation_accuracy, losses)
 ```
@@ -611,3 +585,9 @@ def train_model(
 ```
 
 - Check this [notebook](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/06_FNN/04_FFNs.ipynb) for more.
+
+## Weight Inits
+
+## Autoencoders
+
+## Convolution
