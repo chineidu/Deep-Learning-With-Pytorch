@@ -16,6 +16,7 @@
     - [Load A Trained Model](#load-a-trained-model)
     - [Save The Best Model Weights](#save-the-best-model-weights)
     - [Model Evaluation](#model-evaluation)
+    - [Print Result With Carriage Return](#print-result-with-carriage-return)
   - [Regularization](#regularization)
     - [1. Dropout](#1-dropout)
     - [2. Weight Regularization](#2-weight-regularization)
@@ -231,6 +232,22 @@ model_1.load_state_dict(torch.load(model_path))
 ### Model Evaluation
 
 - Check this [notebook](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/06_FNN/03_model_evaluation.ipynb).
+
+### Print Result With Carriage Return
+
+```Python
+import sys
+import time
+
+
+for idx in np.arange(1, 101):
+    time.sleep(0.3)
+    msg = f"{idx} / 100"
+    sys.stdout.write("\r" + msg)
+
+# Output
+# 1/100 .... 100/100
+```
 
 ## Regularization
 
