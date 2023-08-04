@@ -17,6 +17,8 @@
     - [Save The Best Model Weights](#save-the-best-model-weights)
     - [Model Evaluation](#model-evaluation)
     - [Print Result With Carriage Return](#print-result-with-carriage-return)
+    - [Create Custom Transform](#create-custom-transform)
+    - [Create Custom Dataset](#create-custom-dataset)
   - [Regularization](#regularization)
     - [1. Dropout](#1-dropout)
     - [2. Weight Regularization](#2-weight-regularization)
@@ -247,6 +249,78 @@ for idx in np.arange(1, 101):
 
 # Output
 # 1/100 .... 100/100
+```
+
+### Create Custom Transform
+
+```python
+import numpy.typing as npt
+
+
+class NumpyToTensor:
+    """This is used to convert NumpPy arrays to PyTorch tensors."""
+
+    def __call__(self, X: npt.NDArray[np.float_]):
+        """This is used for applying the transformation."""
+        X = torch.tensor(data=X)
+        return X
+
+    def __repr__(self) -> str:
+        return f"{self.__class__.__name__}()"
+
+# ==== Usage ====
+A = np.random.random(size=(5, 4))
+A_torch = NumpyToTensor()(X=A)
+
+```
+
+### Create Custom Dataset
+
+```python
+from torch.utils.data import DataLoader, TensorDataset, random_split
+import torchvision.transforms as T
+
+
+class CustomDataset(Dataset):
+    """This is a custom dataset class where tensors is a tuple containing the
+    independent and dependent features."""
+
+    def __init__(self, tensors: tuple[torch.Tensor, torch.Tensor], transform=None):
+        # Check that sizes of data and labels match
+        assert all(
+            tensors[0].size(0) == t.size(0) for t in tensors
+        ), "Size mismatch between tensors"
+
+        # Assign inputs
+        self.tensors = tensors
+        self.transform = transform
+
+    def __getitem__(self, index):
+        """Return transformed version of X if there are transforms."""
+        if self.transform:
+            X = self.transform(self.tensors[0][index])
+        else:
+            X = self.tensors[0][index]
+
+        # Return the label
+        y = self.tensors[1][index]
+
+        return (X, y)
+
+    def __len__(self):
+        return self.tensors[0].size(0)
+
+# ==== Usage ====
+# Create a list of transforms to apply to the image
+image_transform = T.Compose(
+    [
+        T.ToPILImage(),
+        T.RandomVerticalFlip(p=0.5),
+        T.ToTensor(),
+    ]
+)
+
+dataset = CustomDataset(tensors=(X, y), tranform=image_transform)
 ```
 
 ## Regularization
