@@ -544,61 +544,101 @@ def train_iris_model(
 
 ```python
 # Build Model
-class Net(nn.Module):
+class FFN(nn.Module):
     """This is used to build a Feed Forward Network architecture that
     is used for classification."""
 
-    def __init__(self) -> None:
+    def __init__(self, input_size: int, hidden_size: int, num_classes: int) -> None:
         super().__init__()
-        self.input = nn.Linear(784, 32)
-        self.hidden = nn.Linear(32, 32)
-        self.output = nn.Linear(32, 10)
+        self.fc1 = nn.Linear(input_size, hidden_size)
+        self.fc2 = nn.Linear(hidden_size, 64)
+        self.fc3 = nn.Linear(64, num_classes)
 
-    def forward(self, X: torch.Tensor) -> torch.Tensor:
-        """This is used to implement forward prop."""
-        X = F.relu(self.input(X))
-        X = F.relu(self.hidden(X))
-        X = torch.log_softmax(self.output(X), dim=1)
-        return X
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """This performs the forward propagation."""
+        # Flatten the input images
+        x = x.view(-1, (28 * 28))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.fc3(x)
+        return x
 
 
-def train_model(
-    *,
-    train_dataloader: DataLoader,
-    validation_dataloader: DataLoader,
-    epochs: int,
-    learning_rate: float,
-    optimizer_name: str,
-):
-    """This is used to train the FFN model."""
-    net, PCT = Net(), 100
-    __optimizer__ = getattr(torch.optim, optimizer_name)
-    optimizer = __optimizer__(params=net.parameters(), lr=learning_rate)
-    # Negative log likelihood loss.
-    # It is useful to train a classification problem with C classes.
-    criterion = nn.NLLLoss()
-    train_loss = torch.zeros(size=(epochs,))
-    train_accuracy, validation_accuracy = (
-        np.zeros(shape=(epochs,)),
-        np.zeros(shape=(epochs,)),
+# ==== Init model ====
+model = FFN(
+    input_size=input_size,
+    hidden_size=hidden_size,
+    num_classes=num_classes,
+).to(device=device)
+
+# ==== Define loss function and optimizer ====
+criterion = nn.CrossEntropyLoss()
+optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
+
+# ==== Training loop ====
+for epoch in tqdm(range(num_epochs)):
+    model.train()
+    running_loss = 0.0
+
+    # ==== Batch training loop ====
+    for images, labels in train_loader:
+        # Push the data to GPU if available
+        images, labels = images.to(device), labels.to(device)
+
+        # ==== Forwardprop ====
+        outputs = model(images)
+        loss: nn.CrossEntropyLoss = criterion(outputs, labels)
+
+        # ==== Backprop ====
+        optimizer.zero_grad()
+        loss.backward()
+        optimizer.step()
+        # Update the loss
+        running_loss += loss.item()
+
+    # ==== Validation loop ====
+    model.eval()
+    val_loss = 0.0
+    val_correct = 0
+    val_total = 0
+
+    with torch.no_grad():
+        for images, labels in val_loader:
+            # Push the data to GPU if available
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            val_loss = criterion(outputs, labels).item()
+            # It returns the value and the index.
+            # We're interested in the index
+            _, predicted = torch.max(outputs, dim=1)
+            val_total += labels.size(0)  # or labels.shape[0]
+            val_correct += (predicted == labels).sum().item()
+    val_accuracy = (val_correct / val_total) * 100
+
+    print(
+        f"Epoch {epoch + 1}/{num_epochs}, "
+        f"Training Loss: {running_loss / len(train_loader)}, "
+        f"Validation Loss: {val_loss / len(val_loader)}, "
+        f"Validation Accuracy: {val_accuracy:.2f}%"
     )
 
-    print(f"Training epoch:")
-    for epoch_idx in np.arange(epochs):
-        net.train()
-        batch_accuracy, batch_loss = [], []
+# Test the model on the test dataset
+model.eval()
+test_correct = 0
+test_total = 0
+with torch.no_grad():
+    for images, labels in test_loader:
+        # Push the data to GPU if available
+        images, labels = images.to(device), labels.to(device)
+        outputs = model(images)
+        # It returns the value and the index.
+        # We're interested in the index
+        _, predicted = torch.max(outputs, 1)
+        test_total += labels.size(0)
+        test_correct += (predicted == labels).sum().item()
 
-        for X_, y_ in train_dataloader:
-            # Reset gradients
-            optimizer.zero_grad()
-
-            # Forward prop and loss
-            y_proba = net(X_)
-            loss = criterion(y_proba, y_)
-
-            # function body ....
-
-    return (train_accuracy, validation_accuracy, train_loss, net)
+test_accuracy = (test_correct / test_total) * 100
+print(f"Test Accuracy: { test_accuracy:.2f}%")
 ```
 
 - Check this [notebook](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/06_FNN/04_FFNs.ipynb) for more.
@@ -608,3 +648,115 @@ def train_model(
 ## Autoencoders
 
 ## Convolution
+
+```python
+class CNN(nn.Module):
+    """This is used to build a Convolutional Neutral Network architecture that
+    is used for classification.
+
+    NB:
+        input_size: This is the output of the final conv layer.
+    """
+
+    def __init__(self, input_size: int, num_classes: int) -> None:
+        super().__init__()
+        self.conv_1 = nn.Conv2d(
+            in_channels=1, out_channels=10, kernel_size=5, stride=1, padding=1
+        )
+        self.pool = nn.MaxPool2d(kernel_size=2, stride=2)
+        self.conv_2 = nn.Conv2d(
+            in_channels=10, out_channels=20, kernel_size=5, stride=1, padding=1
+        )
+        self.fc1 = nn.Linear((20 * input_size * input_size), 50)
+        self.fc2 = nn.Linear(50, num_classes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """This performs the forward propagation."""
+
+        # Conv -> pool
+        x = self.pool(F.relu(self.conv_1(x)))
+        x = self.pool(F.relu(self.conv_2(x)))
+
+        # Flatten the input images to have the dim:
+        # (num_samples, n_channels, n_input, n_input)
+        x = x.view(x.size(0), -1)
+        x = self.fc1(x)
+        x = self.fc2(x)
+
+        return x
+
+def train(
+    model: CNN,
+    device: Any,
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    criterion: Any,
+    optimizer: torch.optim,
+    num_epochs: int,
+) -> CNN:
+    """This is used for training the model."""
+    for epoch in tqdm(range(num_epochs)):
+        model.train()
+        running_loss = 0.0
+
+        # ==== Batch training loop ====
+        for images, labels in train_loader:
+            # Push the data to GPU if available
+            images, labels = images.to(device), labels.to(device)
+
+            # ==== Forwardprop ====
+            outputs = model(images)
+            loss: nn.CrossEntropyLoss = criterion(outputs, labels)
+
+            # ==== Backprop ====
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            # Update the loss
+            running_loss += loss.item()
+
+        # ==== Validation loop ====
+        model.eval()
+        val_loss = 0.0
+        val_correct = 0
+        val_total = 0
+
+        with torch.no_grad():
+            for images, labels in val_loader:
+                # Push the data to GPU if available
+                images, labels = images.to(device), labels.to(device)
+                outputs = model(images)
+                val_loss = criterion(outputs, labels).item()
+                # It returns the value and the index.
+                # We're interested in the index
+                _, predicted = torch.max(outputs, dim=1)
+                val_total += labels.size(0)  # or labels.shape[0]
+                val_correct += (predicted == labels).sum().item()
+        val_accuracy = (val_correct / val_total) * 100
+
+        print(
+            f"Epoch {epoch + 1}/{num_epochs}, "
+            f"Training Loss: {running_loss / len(train_loader)}, "
+            f"Validation Loss: {val_loss / len(val_loader)}, "
+            f"Validation Accuracy: {val_accuracy:.2f}%"
+        )
+    return model
+
+
+def test(model: CNN, device: Any, test_loader: DataLoader):
+    """This is used to the model on the test dataset."""
+    model.eval()
+    test_correct = 0
+    test_total = 0
+    with torch.no_grad():
+        for images, labels in test_loader:
+            # Push the data to GPU if available
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            predicted = torch.argmax(outputs, dim=1)
+            test_total += labels.size(0)
+            test_correct += (predicted == labels).sum().item()
+
+    test_accuracy = (test_correct / test_total) * 100
+    print(f"Test Accuracy: {test_accuracy:.2f}%")
+```
