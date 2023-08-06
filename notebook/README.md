@@ -721,6 +721,65 @@ print(f"Test Accuracy: { test_accuracy:.2f}%")
 
 ## Autoencoders
 
+```python
+class CNNAutoencoder(nn.Module):
+    """This is used to build a Convolutional Neutral Network Autoencoder
+    architecture that is used for image compression.
+
+    Params:
+        input_size: This is the output of the final conv layer.
+        num_classes (int): This is the number of class labels in the input data.
+    """
+
+    def __init__(self) -> None:
+        super().__init__()
+        # ====== Encoder ======
+        # 16 to 64
+        self.encoder = nn.Sequential(
+            nn.Conv2d(
+                in_channels=3, out_channels=16, kernel_size=5, stride=2, padding=1
+            ),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=16, out_channels=32, kernel_size=5, stride=2, padding=1
+            ),
+            nn.ReLU(),
+            nn.Conv2d(
+                in_channels=32, out_channels=64, kernel_size=5, stride=2, padding=1
+            ),
+            nn.ReLU(),
+        )
+
+        # ====== Decoder ======
+        # 64 to 16
+        self.decoder = nn.Sequential(
+            nn.ConvTranspose2d(
+                in_channels=64, out_channels=32, kernel_size=5, stride=2, padding=1
+            ),
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                in_channels=32, out_channels=16, kernel_size=5, stride=2, padding=1
+            ),
+            nn.ReLU(),
+            nn.ConvTranspose2d(
+                in_channels=16,
+                out_channels=3,
+                kernel_size=5,
+                stride=2,
+                padding=1,
+                output_padding=1,  # This ensures the original image == decoded image
+            ),
+            nn.ReLU(),
+        )
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """This performs the forward propagation."""
+        x = self.encoder(x)
+        x = self.decoder(x)
+
+        return x
+```
+
 ## Convolution
 
 ```python
