@@ -29,6 +29,7 @@
   - [Weight Inits](#weight-inits)
   - [Autoencoders](#autoencoders)
   - [Convolution](#convolution)
+  - [Transfer Learning](#transfer-learning)
 
 ## Model Building Styles In PyTorch
 
@@ -893,3 +894,7 @@ def test(model: CNN, device: Any, test_loader: DataLoader):
     test_accuracy = (test_correct / test_total) * 100
     print(f"Test Accuracy: {test_accuracy:.2f}%")
 ```
+
+## Transfer Learning
+
+- [Link](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/10_transfer_learning/01_.ipynb)

@@ -13,6 +13,8 @@
   - [6. Feed Forward Networks](#6-feed-forward-networks)
   - [7. Weight Initialization](#7-weight-initialization)
   - [8. FFN Autoencoders](#8-ffn-autoencoders)
+  - [9. Convolutional Neural Network](#9-convolutional-neural-network)
+  - [10. Transfer Learning](#10-transfer-learning)
 
 Deep understanding of deep learning using Pytorch
 
@@ -37,3 +39,7 @@ Deep understanding of deep learning using Pytorch
 ## 8. [FFN Autoencoders](https://github.com/chineidu/Deep-Learning-With-Pytorch/tree/main/notebook/08_FFN_Autoencoders)
 
 - [Working With GPUs](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/08_FFN_Autoencoders/03_CPUs_vs_GPUs.ipynb)
+
+## 9. [Convolutional Neural Network](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/09_convolution)
+
+## 10. [Transfer Learning](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/10_transfer_learning)
