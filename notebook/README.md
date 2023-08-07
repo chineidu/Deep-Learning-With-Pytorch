@@ -897,4 +897,129 @@ def test(model: CNN, device: Any, test_loader: DataLoader):
 
 ## Transfer Learning
 
-- [Link](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/10_transfer_learning/01_.ipynb)
+```python
+# Define transfer learning class
+class TransferLearningModel(nn.Module):
+    """This is used to load the pre-trained ResNet model."""
+
+    def __init__(self, num_classes: int) -> None:
+        super().__init__()
+        self.model = models.resnet18(pretrained=True)
+
+        # Freeze all the layers in the pre-trained model
+        for param in self.model.parameters():
+            param.requires_grad = False
+
+        # Modify the last fully connected layer for the new task (classification)
+        in_features = self.model.fc.in_features
+        self.model.fc = nn.Linear(in_features=in_features, out_features=num_classes)
+
+    def forward(self, x: torch.Tensor) -> torch.Tensor:
+        """This performs the forward propagation."""
+        return self.model(x)
+
+def train_transfer_learning(
+    model: TransferLearningModel,
+    device: Any,
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    criterion: Any,
+    optimizer: torch.optim,
+    num_epochs: int,
+) -> TransferLearningModel:
+    """This is used for training the pre-trained model."""
+    for epoch in tqdm(range(num_epochs)):
+        model.train()
+        running_loss = 0.0
+
+        # ==== Batch training loop ====
+        for images, labels in train_loader:
+            # Push the data to GPU if available
+            images, labels = images.to(device), labels.to(device)
+
+            # ==== Forwardprop ====
+            outputs = model(images)
+            loss: nn.CrossEntropyLoss = criterion(outputs, labels)
+
+            # ==== Backprop ====
+            optimizer.zero_grad()
+            loss.backward()
+            optimizer.step()
+            # Update the loss
+            running_loss += loss.item()
+
+        # ==== Validation loop ====
+        model.eval()
+        val_loss = 0.0
+        val_correct = 0
+        val_total = 0
+
+        with torch.no_grad():
+            for images, labels in val_loader:
+                # Push the data to GPU if available
+                images, labels = images.to(device), labels.to(device)
+                outputs = model(images)
+                val_loss = criterion(outputs, labels).item()
+                # It returns the value and the index.
+                # We're interested in the index
+                _, predicted = torch.max(outputs, dim=1)
+                val_total += labels.size(0)  # or labels.shape[0]
+                val_correct += (predicted == labels).sum().item()
+        val_accuracy = (val_correct / val_total) * 100
+
+        print(
+            f"Epoch {epoch + 1}/{num_epochs}, "
+            f"Training Loss: {running_loss / len(train_loader)}, "
+            f"Validation Loss: {val_loss / len(val_loader)}, "
+            f"Validation Accuracy: {val_accuracy:.2f}%"
+        )
+    return model
+
+
+def test(model: TransferLearningModel, device: Any, test_loader: DataLoader):
+    """This is used to the model on the test dataset."""
+    model.eval()
+    test_correct = 0
+    test_total = 0
+    with torch.no_grad():
+        for images, labels in test_loader:
+            # Push the data to GPU if available
+            images, labels = images.to(device), labels.to(device)
+            outputs = model(images)
+            predicted = torch.argmax(outputs, dim=1)
+            test_total += labels.size(0)
+            test_correct += (predicted == labels).sum().item()
+
+    test_accuracy = (test_correct / test_total) * 100
+    print(f"Test Accuracy: {test_accuracy:.2f}%")
+
+def main():
+    """This is the main function."""
+    # Device configuration
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # If we're on a CUDA machine, this should print a CUDA device:
+    print(f"Working on device={device!r}")
+
+    # ==== Init model ====
+    model = TransferLearningModel(num_classes=num_classes).to(device=device)
+
+    # ==== Define loss function and optimizer ====
+    criterion = nn.CrossEntropyLoss()
+    optimizer = torch.optim.Adam(params=model.parameters(), lr=learning_rate)
+
+    # ==== Train the model ====
+    model = train_transfer_learning(
+        model,
+        device=device,
+        train_loader=train_loader_stl_10,
+        val_loader=val_loader_stl_10,
+        criterion=criterion,
+        optimizer=optimizer,
+        num_epochs=num_epochs,
+    )
+
+    # ==== Evaluate the model ====
+    test(model, device=device, test_loader=test_loader_stl_10)
+    return model
+```
