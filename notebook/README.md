@@ -1,13 +1,14 @@
-# Summary
+# Deep Learning With PyTorch
 
 ## Table of Content
 
-- [Summary](#summary)
+- [Deep Learning With PyTorch](#deep-learning-with-pytorch)
   - [Table of Content](#table-of-content)
   - [Model Building Styles In PyTorch](#model-building-styles-in-pytorch)
     - [1. Using Sequential API](#1-using-sequential-api)
     - [2. Using Classes](#2-using-classes)
   - [ANN (Using Sequential API)](#ann-using-sequential-api)
+    - [Class API (nn.module)](#class-api-nnmodule)
   - [Common Operations](#common-operations)
     - [DataLoaders](#dataloaders)
     - [Use Dynamic Activation Functions](#use-dynamic-activation-functions)
@@ -35,7 +36,7 @@
 
 ### 1. Using Sequential API
 
-```python
+```py
 import torch.nn as nn
 
 def build_model() -> Any:
@@ -55,7 +56,7 @@ def build_model() -> Any:
 - It requires some time to setup.
 - It's very flexible.
 
-```python
+```py
 import torch.nn.functional as F
 
 def Model(nn.Module) -> Any:
@@ -78,7 +79,7 @@ def Model(nn.Module) -> Any:
 
 ## ANN (Using Sequential API)
 
-```python
+```py
 def build_model(*, n_units: int) -> Any:
     """This is used to build the model architecture."""
     clf = nn.Sequential(
@@ -123,11 +124,77 @@ def train_model(
     return model
 ```
 
+### Class API (nn.module)
+
+```py
+class ANNClassifier(nn.Module):
+
+    def __init__(self, input_size) -> None:
+        super().__init__()
+        # Hidden layer 1
+        self.fc1 = nn.Linear(input_size, 64)
+        self.relu1 = nn.ReLU()
+
+        # Hidden layer 2
+        self.fc2 = nn.Linear(64, 32)
+        self.relu2 = nn.ReLU()
+
+        # Output layer
+        self.fc3 = nn.Linear(32, 1)
+        self.sigmoid = nn.Sigmoid()
+
+    def forward(self, x) -> torch.Tensor:
+        x = self.fc1(x)
+        x = self.relu1(x)
+        x = self.fc2(x)
+        x = self.relu2(x)
+        x = self.fc3(x)
+        x = self.sigmoid(x)
+        return x
+
+
+def train_model(
+    *,
+    model: nn.Module,
+    learning_rate: float,
+    epochs: int,
+    X_train: torch.Tensor,
+    y_train: torch.Tensor,
+):
+    criterion = nn.BCELoss()
+    optimizer = torch.optim.Adam(model.parameters(), lr=learning_rate)
+    losses = torch.zeros(size=(epochs,))
+    accuracy = torch.zeros(size=(epochs,))
+
+    for epoch_id in tqdm(range(epochs)):
+        # Reset the gradients
+        optimizer.zero_grad()
+        # Forward propagtion
+        y_pred: torch.Tensor = model(X_train)
+        # Compute loss
+        loss: torch.Tensor = criterion(y_pred, y_train)
+        losses[epoch_id] = loss
+        # Calculate accuracy
+        accuracy[epoch_id] = (
+            (y_pred > 0.5).float() == y_train.float()
+        ).sum() / y_train.size(0)
+
+        # Back propagation
+        loss.backward()
+        # Update parameters
+        optimizer.step()
+
+        if (epoch_id + 1) % 100 == 0:
+            console.print(f"Epoch [{epoch_id+1}/{epochs}], Loss: {loss.item():.4f}")
+
+    return model, losses, accuracy
+```
+
 ## Common Operations
 
 ### DataLoaders
 
-```python
+```py
 from torch.utils.data import DataLoader, TensorDataset
 
 
@@ -143,7 +210,7 @@ test_DL = DataLoader(dataset=test_data, batch_size=1)
 
 ### Use Dynamic Activation Functions
 
-```python
+```py
 # Examples of actvation functions
 activation_funcs = ["ReLU", "ReLU6", "LeakyReLU"]
 
@@ -169,7 +236,7 @@ class Net(nn.Module):
 
 ### Use Dynamic Optimizers
 
-```python
+```py
 def train_model(
     *,
     train_dataloader: DataLoader,
@@ -205,7 +272,7 @@ OPTIMIZERS = ["SGD", "RMSprop", "Adam"]
 
 ### Save A Trained Model
 
-```python
+```py
 import torch
 
 # Train the model
@@ -218,7 +285,7 @@ torch.save(trained_net.state_dict(), model_path)
 
 ### Load A Trained Model
 
-```python
+```py
 import torch
 
 # Initialize model
@@ -238,7 +305,7 @@ model_1.load_state_dict(torch.load(model_path))
 
 ### Print Result With Carriage Return
 
-```Python
+```py
 import sys
 import time
 
@@ -254,7 +321,7 @@ for idx in np.arange(1, 101):
 
 ### Create Custom Transform
 
-```python
+```py
 import numpy.typing as npt
 
 
@@ -277,7 +344,7 @@ A_torch = NumpyToTensor()(X=A)
 
 ### Create Custom Dataset
 
-```python
+```py
 from torch.utils.data import DataLoader, TensorDataset, random_split
 import torchvision.transforms as T
 
@@ -328,7 +395,7 @@ dataset = CustomDataset(tensors=(X, y), tranform=image_transform)
 
 ### 1. Dropout
 
-```python
+```py
 class Net(nn.Module):
     """This is an ANN architecture."""
 
@@ -413,7 +480,7 @@ def train_model(
 
 #### Ridge/L2
 
-```python
+```py
 class Net(nn.Module):
     """This is an ANN architecture. The output layer has 3 units."""
 
@@ -468,7 +535,7 @@ def train_iris_model(
 
 #### Lasso
 
-```python
+```py
 def train_iris_model(
     *,
     train_data_loader: DataLoader,
@@ -542,7 +609,7 @@ def train_iris_model(
 
 ### 3. Mini-Batch
 
-```python
+```py
 class Net(nn.Module):
     """This is an ANN architecture. The output layer has 3 units."""
 
@@ -617,7 +684,7 @@ def train_iris_model(
 
 ## FFN
 
-```python
+```py
 # Build Model
 class FFN(nn.Module):
     """This is used to build a Feed Forward Network architecture that
@@ -722,7 +789,7 @@ print(f"Test Accuracy: { test_accuracy:.2f}%")
 
 ## Autoencoders
 
-```python
+```py
 class CNNAutoencoder(nn.Module):
     """This is used to build a Convolutional Neutral Network Autoencoder
     architecture that is used for image compression.
@@ -783,7 +850,7 @@ class CNNAutoencoder(nn.Module):
 
 ## Convolution
 
-```python
+```py
 class CNN(nn.Module):
     """This is used to build a Convolutional Neutral Network architecture that
     is used for classification.
@@ -897,7 +964,9 @@ def test(model: CNN, device: Any, test_loader: DataLoader):
 
 ## Transfer Learning
 
-```python
+- More [examples](https://github.com/pytorch/tutorials/blob/main/beginner_source/transfer_learning_tutorial.py)
+
+```py
 # Define transfer learning class
 class TransferLearningModel(nn.Module):
     """This is used to load the pre-trained ResNet model."""
