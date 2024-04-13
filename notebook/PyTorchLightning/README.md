@@ -294,6 +294,9 @@ class LightningModel(L.LightningModule):
         # === NEW! ===
         # Set up attributes for computing test accuracy
         self.test_acc = torchmetrics.Accuracy(task="multiclass", num_classes=10)
+        # Save settings and hyperparameters to the log directory
+        # but skip the model parameters
+        self.save_hyperparameters(ignore=["model"])
 
     def forward(self, x: torch.Tensor) -> torch.Tensor:
         return self.model(x)
