@@ -1,11 +1,16 @@
 """This module contains utility functions."""
+
+import os
+import sys
 import logging
-from typing import Any
+from typing import Any, TypeAlias
 
 import numpy as np
 import numpy.typing as npt
 import seaborn as sns
 import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
 
 
 def create_iris_data() -> tuple[torch.Tensor, torch.Tensor]:
@@ -79,3 +84,51 @@ def set_up_logger(delim: str = "::") -> Any:
     logging.basicConfig(level=logging.INFO, format=format_)
     logger = logging.getLogger(__name__)
     return logger
+
+
+def go_up_from_current_directory(go_up: int = 1) -> None:
+    """This is used to up a number of directories.
+
+    Args:
+    -----
+    go_up: int, default=1
+        This indicates the number of times to go back up from the current directory.
+
+    Returns:
+    --------
+    None
+    """
+
+    CONST: str = "../"
+    NUM: str = CONST * go_up
+
+    # Goto the previous directory
+    prev_directory = os.path.join(os.path.dirname(__name__), NUM)
+    # Get the 'absolute path' of the previous directory
+    abs_path_prev_directory = os.path.abspath(prev_directory)
+
+    # Add the path to the System paths
+    sys.path.insert(0, abs_path_prev_directory)
+    print(abs_path_prev_directory)
+
+
+Model: TypeAlias = nn.Module
+
+
+def compute_accuracy(model: Model, dataloader: DataLoader) -> float:
+    model = model.eval()
+
+    correct: float = 0.0
+    total_examples: int = 0
+
+    for _, (features, labels) in enumerate(dataloader):
+        with torch.inference_mode():  # Same as torch.no_grad
+            logits = model(features)
+
+        predictions: torch.Tensor = torch.argmax(logits, dim=1)
+
+        compare: bool = (labels == predictions).float()
+        correct += torch.sum(compare)
+        total_examples += len(compare)  # type: ignore
+
+    return correct / total_examples
