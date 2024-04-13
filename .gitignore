@@ -131,4 +131,4 @@ dmypy.json
 # Custom
 sample.py
 data
-**/lightning_logs/**/
+**/*logs/**/
