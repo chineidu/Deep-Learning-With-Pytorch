@@ -1,9 +1,10 @@
 # Copied!
 import os
-from typing import Any, Optional, TypeAlias
+from typing import Any, Literal, Optional, TypeAlias
 
 import matplotlib.pyplot as plt
 import numpy as np
+import pandas as pd
 import torch
 from torch.utils.data import DataLoader
 import torch.nn as nn
@@ -232,3 +233,41 @@ def show_failures(
                 ax.title.set_text(f"P: {predictions[idx]} | T: {targets[idx]}")
             ax.axison = False
     return fig, axes
+
+
+def plot_csv_logger(
+    csv_path: str,
+    loss_names: list[Literal["train_loss", "val_loss"]] = ["train_loss", "val_loss"],
+    eval_names: list[Literal["train_accuracy", "val_accuracy"]] = [
+        "train_accuracy",
+        "val_accuracy",
+    ],
+) -> None:
+    """Plots the training and validation loss and accuracy metrics from a CSV file.
+
+    Params:
+    -------
+        csv_path (str): The path to the CSV file containing the metrics.
+        loss_names (list[Literal["train_loss", "val_loss"]], optional): The names of the loss metrics to plot. Defaults to ["train_loss", "val_loss"].
+        eval_names (list[Literal["train_acc", "val_acc"]], optional): The names of the evaluation metrics to plot. Defaults to ["train_acc", "val_acc"].
+
+    Returns:
+    --------
+        None
+    """
+
+    metrics: pd.DataFrame = pd.read_csv(csv_path)
+
+    aggreg_metrics: list[dict[str, Any] | None] = []
+    agg_col: str = "epoch"
+
+    for i, dfg in metrics.groupby(agg_col):
+        agg = dict(dfg.mean())
+        agg[agg_col] = i
+        aggreg_metrics.append(agg)
+
+    df_metrics: pd.DataFrame = pd.DataFrame(aggreg_metrics)
+    df_metrics[loss_names].plot(grid=True, legend=True, xlabel="Epoch", ylabel="Loss")
+    df_metrics[eval_names].plot(grid=True, legend=True, xlabel="Epoch", ylabel="ACC")
+
+    plt.show()
