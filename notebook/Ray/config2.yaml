@@ -8,12 +8,15 @@ max_workers: 2
 auth:
   ssh_user: ubuntu
 
+# If a node is idle for this many minutes, it will be removed.
+idle_timeout_minutes: 5
+
 # Cloud-provider specific configuration.
 provider:
-    project_id: ml-project-419115 # TODO: set your GCP project ID here
-    type: gcp
-    availability_zone: europe-west2-b
-    region: europe-west2
+  project_id: ml-project-419115 # TODO: set your GCP project ID here
+  type: gcp
+  availability_zone: europe-west2-b
+  region: europe-west2
 
 available_node_types:
   ray_head_default:
@@ -33,3 +36,12 @@ available_node_types:
             diskSizeGb: 50
             # See https://cloud.google.com/compute/docs/images for more images
             sourceImage: projects/deeplearning-platform-release/global/images/family/common-cpu
+
+setup_commands:
+- sleep 5
+- sudo apt-get update
+- sudo apt-get install -y python3-pip python-is-python3
+- pip install ray[default] numpy pandas rich
+
+# Specify the node type of the head node (as configured above).
+head_node_type: ray_head_default
