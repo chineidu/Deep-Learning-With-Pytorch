@@ -132,3 +132,4 @@ dmypy.json
 sample.py
 data
 **/*logs/**/
+**/service_account/**
