@@ -14,7 +14,8 @@
     - [3. Add Metrics Using TorchMetrics](#3-add-metrics-using-torchmetrics)
     - [4. Add Evaluation Using Test Step](#4-add-evaluation-using-test-step)
     - [5. Organize Code With DataLoaders](#5-organize-code-with-dataloaders)
-  - [Load Pytorch Model](#load-pytorch-model)
+    - [Load Lightning Model](#load-lightning-model)
+    - [Load Lightning Model From Checkpoint](#load-lightning-model-from-checkpoint)
 
 ## Basic Setup
 
@@ -473,11 +474,33 @@ torch.save(pytorch_model.state_dict(), PATH)
 
 ---
 
-## Load Pytorch Model
+### Load Lightning Model
 
 ```py
-# To load model:
-model = PyTorchMLP(num_features=784, num_classes=10)
+#Load Pytorch Model
+model = PyTorchMLP(num_features=num_features, num_classes=num_classes)
 model.load_state_dict(torch.load(PATH))
 model.eval()
+```
+
+<br>
+
+### Load Lightning Model From Checkpoint
+
+- [Docs](https://lightning.ai/docs/pytorch/stable/common/checkpointing_basic.html#initialize-with-other-parameters)
+
+```py
+MyLightningModule.load_from_checkpoint("/path/to/checkpoint.ckpt", **kwargs)
+
+#.g
+pytorch_model = MLPClassifier(num_features=num_features, num_classes=2)
+lightning_model = MyLightningModule.load_from_checkpoint(
+    checkpoint_path=path,
+    model=pytorch_model, # kwargs
+)
+# disable randomness, dropout, etc...
+lightning_model.eval()
+# predict with the model
+y_hat = lightning_model(x)
+
 ```
