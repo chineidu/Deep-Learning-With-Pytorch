@@ -1,6 +1,9 @@
 <!-- markdownlint-disable-file MD033 MD045-->
 # Micro Grad
 
+- This explains `backpropagation` in neural networks using a simple library called `micrograd`.
+- Source: [Andrey Kaparthy YouTube](https://www.youtube.com/watch?v=VMj-3S1tku0&list=PLAqhIrjkxbuWI23v9cThsA9GvCAUhRvKZ&ab_channel=AndrejKarpathy)
+
 ## Table of Content
 
 - [Micro Grad](#micro-grad)
