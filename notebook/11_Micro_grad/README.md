@@ -71,10 +71,13 @@ class Value:
 
     def __add__(self, other: "Value") -> "Value":
         """Addition of two values."""
+        other = other if isinstance(other, Value) else Value(other)
         return Value(self.data + other.data, (self, other), "+")
+
 
     def __mul__(self, other: "Value") -> "Value":
         """Multiplication of two values."""
+        other = other if isinstance(other, Value) else Value(other)
         return Value(self.data * other.data, (self, other), "*")
 
 a = Value(data=2, label="a")
