@@ -5,10 +5,11 @@
 
 # type: ignore
 
+from typing import Any
 from graphviz import Digraph
 
 
-def trace(root):
+def trace(root: Any) -> tuple[set[Any], ...]:
     nodes, edges = set(), set()
 
     def build(v):
@@ -22,7 +23,7 @@ def trace(root):
     return nodes, edges
 
 
-def draw_dot(root, format="svg", rankdir="LR"):
+def draw_dot(root: Any, format: str = "svg", rankdir: str = "LR") -> Digraph:
     """
     format: png | svg | ...
     rankdir: TB (top to bottom graph) | LR (left to right)
@@ -36,7 +37,6 @@ def draw_dot(root, format="svg", rankdir="LR"):
     for n in nodes:
         dot.node(
             name=str(id(n)),
-            # label="{ data %.4f | grad %.4f }" % (n.data, n.grad),
             label="{ %s | data %.4f | grad %.4f  }" % (n.label, n.data, n.grad),
             shape="record",
         )
