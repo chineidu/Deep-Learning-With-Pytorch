@@ -23,28 +23,24 @@ class Module(ABC):
 class Neuron(Module):
     """A single neuron."""
 
-    def __init__(self, n_inputs: int, nonlinear: bool) -> None:
+    def __init__(self, n_inputs: int, nonlinear: bool = True) -> None:
         """
         Params:
         -------
             n_inputs (int): The number of inputs (weights) to each neuron in the layer.
-            nonlinear (bool): Whether the layer should be a linear or a non-linear layer.
+            nonlinear (bool, default=True): Whether the layer should be a linear or a non-linear layer.
         """
-        self.weights = [
-            Value(data=np.random.uniform(-1, 1)) for _ in np.arange(n_inputs)
-        ]
-        self.bias = Value(data=np.random.uniform(-1, 1))
+        self.weights = np.array(
+            [Value(data=np.random.uniform(-1, 1)) for _ in np.arange(n_inputs)]
+        )
+        self.bias = Value(data=0.0)
         self.nonlinear = nonlinear
 
     def __repr__(self) -> str:
-        return f"{'ReLU' if self.nonlinear else 'Linear'}Neuron({len(self.weights)})"
+        return f"{'ReLU' if self.nonlinear else 'Linear'}Neuron(n_weights={len(self.weights)})"
 
     def __call__(self, x: list[Value]) -> Value:
         """This is used to perform the forward pass."""
-        assert (
-            len(x) == len(self.weights)
-        ), f"Number of inputs must match number of weights. Expected {len(self.weights)} inputs, got {len(x)}"
-
         # w1x1 + w2x2 + ... + wnxn + b
         activation: Value = (
             np.sum((wi * xi) for wi, xi in zip(self.weights, x)) + self.bias
@@ -54,7 +50,7 @@ class Neuron(Module):
 
     def parameters(self) -> list[Value]:
         """Returns the parameters of the layer."""
-        return self.weights + [self.bias]
+        return self.weights.tolist() + [self.bias]
 
 
 class Layer(Module):
@@ -97,7 +93,8 @@ class MLP(Module):
         assert len(out_layers) > 0, "Must have at least one layer"
         self.size = [n_inputs] + out_layers
         self.layers = [
-            Layer(self.size[i], self.size[i + 1]) for i in range(len(out_layers))
+            Layer(self.size[i], self.size[i + 1], nonlinear=i != len(out_layers) - 1)
+            for i in range(len(out_layers))
         ]
 
     def __repr__(self):
