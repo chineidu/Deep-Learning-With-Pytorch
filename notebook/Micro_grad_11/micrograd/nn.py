@@ -23,19 +23,21 @@ class Module(ABC):
 class Neuron(Module):
     """A single neuron."""
 
-    def __init__(self, n_inputs: int) -> None:
+    def __init__(self, n_inputs: int, nonlinear: bool) -> None:
         """
         Params:
         -------
             n_inputs (int): The number of inputs (weights) to each neuron in the layer.
+            nonlinear (bool): Whether the layer should be a linear or a non-linear layer.
         """
         self.weights = [
             Value(data=np.random.uniform(-1, 1)) for _ in np.arange(n_inputs)
         ]
         self.bias = Value(data=np.random.uniform(-1, 1))
+        self.nonlinear = nonlinear
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(n_inputs={len(self.weights)}, weights={self.weights}, bias={self.bias})"
+        return f"{'ReLU' if self.nonlinear else 'Linear'}Neuron({len(self.weights)})"
 
     def __call__(self, x: list[Value]) -> Value:
         """This is used to perform the forward pass."""
@@ -47,7 +49,7 @@ class Neuron(Module):
         activation: Value = (
             np.sum((wi * xi) for wi, xi in zip(self.weights, x)) + self.bias
         )
-        output: Value = activation.tanh()
+        output: Value = activation.relu() if self.nonlinear else activation
         return output
 
     def parameters(self) -> list[Value]:
@@ -58,19 +60,18 @@ class Neuron(Module):
 class Layer(Module):
     """A layer of neurons."""
 
-    def __init__(self, n_inputs: int, n_outputs: int) -> None:
+    def __init__(self, n_inputs: int, n_outputs: int, **kwargs) -> None:
         """
         Params:
         -------
             n_inputs (int): The number of inputs (weights) to each neuron in the layer.
             n_outputs (int): The number of outputs (neurons) from the layer.
+            nonlinear (bool): Whether the layer should be a linear or a non-linear layer.
         """
-        self.neurons = [Neuron(n_inputs) for _ in np.arange(n_outputs)]
-        self.n_inputs = n_inputs
-        self.n_outputs = n_outputs
+        self.neurons = [Neuron(n_inputs, **kwargs) for _ in np.arange(n_outputs)]
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(n_inputs={self.n_inputs}, n_outputs={self.n_outputs})"
+        return f"Layer of [{', '.join(str(n) for n in self.neurons)}]"
 
     def __call__(self, x: list[Value]) -> Value | list[Value]:
         """This is used to perform the forward pass of the layer."""
@@ -98,6 +99,9 @@ class MLP(Module):
         self.layers = [
             Layer(self.size[i], self.size[i + 1]) for i in range(len(out_layers))
         ]
+
+    def __repr__(self):
+        return f"MLP of [{', '.join(str(layer) for layer in self.layers)}]"
 
     def __call__(self, x: list[Value]) -> Value | list[Value]:
         """Forward pass through the network."""

@@ -29,7 +29,7 @@ class Value:
         self._backward = lambda: None
 
     def __repr__(self) -> str:
-        return f"{self.__class__.__name__}(data={self.data})"
+        return f"{self.__class__.__name__}(data={self.data}, grad={self.grad})"
 
     def __add__(self, other: "Value") -> "Value":
         """Addition of two values."""
@@ -127,6 +127,20 @@ class Value:
         def _backward() -> None:
             """Closure for calculating gradient of a hyperbolic tangent operation."""
             self.grad += (1 - tanh**2) * out.grad
+
+        out._backward = _backward
+        return out
+
+    def relu(self) -> "Value":
+        """Rectified linear unit of value."""
+        x: int | float = self.data
+        relu = max(0, x)
+        out: Value = Value(relu, _children=(self,), _op="relu")
+
+        def _backward() -> None:
+            """Closure for calculating gradient of a rectified linear unit operation."""
+            # if x > 0; the derivative is 1 else the derivative is 0.
+            self.grad += (x > 0) * out.grad
 
         out._backward = _backward
         return out
