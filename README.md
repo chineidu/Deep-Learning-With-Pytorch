@@ -15,6 +15,9 @@
   - [8. FFN Autoencoders](#8-ffn-autoencoders)
   - [9. Convolutional Neural Network](#9-convolutional-neural-network)
   - [10. Transfer Learning](#10-transfer-learning)
+  - [11. PyTorch Lightning](#11-pytorch-lightning)
+  - [12. Ray](#12-ray)
+  - [13. MicroGrad](#13-micrograd)
 
 Deep understanding of deep learning using Pytorch
 
@@ -43,3 +46,9 @@ Deep understanding of deep learning using Pytorch
 ## 9. [Convolutional Neural Network](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/09_convolution)
 
 ## 10. [Transfer Learning](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/10_transfer_learning)
+
+## 11. [PyTorch Lightning](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/PyTorchLightning)
+
+## 12. [Ray](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/Ray)
+
+## 13. [MicroGrad](https://github.com/chineidu/Deep-Learning-With-Pytorch/blob/main/notebook/Micro_grad_11/micrograd)
