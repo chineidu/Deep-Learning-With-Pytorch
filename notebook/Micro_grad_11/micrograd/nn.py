@@ -10,6 +10,8 @@ from micrograd.basetype import Value
 
 
 class Module(ABC):
+    """Base class for neural network modules."""
+
     def zero_grad(self) -> None:
         """Set all the gradients to zero."""
         for p in self.parameters():
@@ -30,9 +32,7 @@ class Neuron(Module):
             n_inputs (int): The number of inputs (weights) to each neuron in the layer.
             nonlinear (bool, default=True): Whether the layer should be a linear or a non-linear layer.
         """
-        self.weights = np.array(
-            [Value(data=np.random.uniform(-1, 1)) for _ in np.arange(n_inputs)]
-        )
+        self.weights = [Value(data=np.random.uniform(-1, 1)) for _ in range(n_inputs)]
         self.bias = Value(data=0.0)
         self.nonlinear = nonlinear
 
@@ -50,7 +50,7 @@ class Neuron(Module):
 
     def parameters(self) -> list[Value]:
         """Returns the parameters of the layer."""
-        return self.weights.tolist() + [self.bias]
+        return self.weights + [self.bias]
 
 
 class Layer(Module):
@@ -62,7 +62,6 @@ class Layer(Module):
         -------
             n_inputs (int): The number of inputs (weights) to each neuron in the layer.
             n_outputs (int): The number of outputs (neurons) from the layer.
-            nonlinear (bool): Whether the layer should be a linear or a non-linear layer.
         """
         self.neurons = [Neuron(n_inputs, **kwargs) for _ in np.arange(n_outputs)]
 
@@ -91,9 +90,9 @@ class MLP(Module):
             in the first layer, 3 neurons in the second layer, and 1 neuron in the third layer.
         """
         assert len(out_layers) > 0, "Must have at least one layer"
-        self.size = [n_inputs] + out_layers
+        size = [n_inputs] + out_layers
         self.layers = [
-            Layer(self.size[i], self.size[i + 1], nonlinear=i != len(out_layers) - 1)
+            Layer(size[i], size[i + 1], nonlinear=i != len(out_layers) - 1)
             for i in range(len(out_layers))
         ]
 
@@ -103,8 +102,8 @@ class MLP(Module):
     def __call__(self, x: list[Value]) -> Value | list[Value]:
         """Forward pass through the network."""
         for layer in self.layers:
-            output: Value | list[Value] = layer(x)  # type: ignore
-        return output
+            x: Value | list[Value] = layer(x)  # type: ignore
+        return x
 
     def parameters(self) -> list[Value]:
         """Returns the parameters of the network."""
