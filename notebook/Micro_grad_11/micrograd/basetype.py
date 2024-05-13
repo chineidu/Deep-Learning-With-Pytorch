@@ -25,7 +25,7 @@ class Value:
         self._prev = set(_children)
         self._op = _op
         self.label = label
-        self.grad = 0  # No gradient yet
+        self.grad = 0.0  # No gradient yet
         self._backward = lambda: None
 
     def __repr__(self) -> str:
