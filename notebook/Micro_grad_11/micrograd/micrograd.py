@@ -68,6 +68,10 @@ class Value:
         """Multiplication of two values. i.e. `other * self`"""
         return self * other
 
+    def __neg__(self) -> int | float:
+        """Negation of value."""
+        return self * -1  # type: ignore
+
     def __sub__(self, other: "Value") -> "Value":
         """Subtraction of two values."""
         other = other if isinstance(other, Value) else Value(other)  # type: ignore
@@ -81,9 +85,9 @@ class Value:
         out._backward = _backward
         return out
 
-    def __neg__(self) -> int | float:
-        """Negation of value."""
-        return self * -1  # type: ignore
+    def __rsub__(self, other: "Value") -> "Value":
+        """Subtraction of two values. i.e. `other - self`"""
+        return other + (-self)  # type: ignore
 
     def __pow__(self, other: "Value") -> "Value":
         """Exponentiation of value."""
